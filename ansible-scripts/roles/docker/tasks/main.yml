@@ -1,0 +1,38 @@
+---
+
+  - name: Install supporting tools
+    yum:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - wget
+      - iptables
+
+  - name: Create directory
+    file:
+      path: "{{ home_dir }}/docker"
+      state: directory
+      mode: '0755'
+
+  - name: Download docker tar file
+    get_url:
+      url: https://download.docker.com/linux/static/stable/x86_64/docker-20.10.9.tgz
+      dest: "{{ home_dir }}/docker"
+      mode: '0440'
+
+  - name: Unarchive docker file
+    unarchive:
+      src: "{{ home_dir }}/docker/docker-20.10.9.tgz"
+      dest: "{{ home_dir }}/docker"
+      remote_src: yes
+
+  - name: Copy files
+    shell: 'cp {{ home_dir }}/docker/docker/* /usr/bin/'
+
+  - name: Add to PATH
+    shell: echo $PATH
+    environment:
+      PATH: "/usr/bin/docker/"
+
+  - name: Start Docker
+    shell: "dockerd &"

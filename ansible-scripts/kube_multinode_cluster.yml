@@ -1,0 +1,33 @@
+---
+- name: Create multi-node Kube cluster
+  hosts: localhost
+  connection: local
+  vars:
+    - home_dir: "/home/ec2-user" 
+  roles:
+    - docker
+    - kubectl
+    - kind
+    - helm
+  post_tasks:
+
+    - name: Copy config file
+      copy:
+        src: files/kind-config.yaml
+        dest: "{{ home_dir }}/kind/kind-config.yaml"
+
+    - name: Create cluster
+      shell: "{{ home_dir }}/kind/kind create cluster --name k8s-playground --config {{ home_dir }}/kind/kind-config.yaml"
+      register: cluster_output
+
+    - debug:
+        msg: "{{ cluster_output.stdout }}"
+
+    - name: Create ingress controller
+      shell: "sudo /usr/local/bin/kubectl apply -f files/ingress-controller.yml"
+
+    - name: Add helm repo
+      shell: "helm repo add nginx-stable https://helm.nginx.com/stable && helm repo update"
+
+    - name: Install ingress controller - prometheus
+      shell: "helm install controller  nginx-stable/nginx-ingress --set prometheus.create=true --set prometheus.port=9901"

@@ -1,0 +1,26 @@
+---
+
+  - name: Create directory
+    file:
+      path: "{{ home_dir }}/helm"
+      state: directory
+      mode: '0755'
+
+  - name: Download helm file
+    get_url:
+      url: https://get.helm.sh/helm-v3.8.0-linux-amd64.tar.gz
+      dest: "{{ home_dir }}/helm/"
+      mode: '0755'
+
+  - name: Unarchive helm file
+    unarchive:
+      src: "{{ home_dir }}/helm/helm-v3.8.0-linux-amd64.tar.gz"
+      dest: "{{ home_dir }}/helm"
+      remote_src: yes
+
+  - name: Copy helm file
+    copy:
+      src: "{{ home_dir }}/helm/linux-amd64/helm"
+      dest: /usr/bin/helm
+
+
